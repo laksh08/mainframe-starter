@@ -1,0 +1,82 @@
+mq:
+  enabled: true
+  queueManagers:
+    - name: primary
+      host: ${MQ_PRIMARY_HOST:localhost}
+      port: ${MQ_PRIMARY_PORT:1414}
+      queueManager: ${MQ_PRIMARY_QM:QM1}
+      channel: ${MQ_PRIMARY_CHANNEL:DEV.APP.SVRCONN}
+      username: ${MQ_PRIMARY_USER:app}
+      password: ${MQ_PRIMARY_PASSWORD:password}
+      priority: 10
+      enabled: true
+      queues:
+        - name: DEV.QUEUE.1
+          alias: orders
+          requestReplyEnabled: true
+          replyQueue: DEV.QUEUE.2
+          receiveTimeoutMs: 5000
+    - name: secondary
+      host: ${MQ_SECONDARY_HOST:localhost}
+      port: ${MQ_SECONDARY_PORT:1415}
+      queueManager: ${MQ_SECONDARY_QM:QM2}
+      channel: ${MQ_SECONDARY_CHANNEL:DEV.APP.SVRCONN}
+      username: ${MQ_SECONDARY_USER:app}
+      password: ${MQ_SECONDARY_PASSWORD:password}
+      priority: 5
+      enabled: false
+      queues:
+        - name: DEV.QUEUE.1
+          receiveTimeoutMs: 5000
+  routing:
+    strategy: ROUND_ROBIN
+    customStrategyBean:
+  retry:
+    enabled: true
+    maxAttempts: 3
+    initialDelayMs: 500
+    maxDelayMs: 10000
+    multiplier: 2.0
+    exponentialBackoff: true
+  pool:
+    enabled: true
+    maxConnections: 10
+    maxSessionsPerConnection: 500
+    blockIfFull: true
+    connectionTimeoutMs: 30000
+    idleTimeoutMs: 30000
+    validateOnBorrow: true
+    reconnectOnException: true
+  health:
+    enabled: true
+    validateQueues: true
+    validateChannels: true
+    timeoutMs: 5000
+  failure:
+    publishEvents: true
+    logStructuredErrors: true
+    incrementMetrics: true
+  observability:
+    metricsEnabled: true
+    structuredLoggingEnabled: true
+    correlationIdEnabled: true
+    openTelemetryEnabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{correlationId:-}]"
+
+spring:
+  application:
+    name: ibm-mq-starter

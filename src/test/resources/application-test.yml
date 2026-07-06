@@ -1,0 +1,52 @@
+mq:
+  enabled: true
+  queueManagers:
+    - name: test-qm
+      host: localhost
+      port: 1414
+      queueManager: QM1
+      channel: DEV.APP.SVRCONN
+      username: app
+      password: password
+      priority: 1
+      enabled: true
+      queues:
+        - name: DEV.QUEUE.1
+          receiveTimeoutMs: 1000
+  routing:
+    strategy: FAILOVER
+  retry:
+    enabled: true
+    maxAttempts: 2
+    initialDelayMs: 100
+    maxDelayMs: 500
+    multiplier: 2.0
+    exponentialBackoff: true
+  pool:
+    enabled: false
+  health:
+    enabled: true
+    validateQueues: false
+    validateChannels: false
+  failure:
+    publishEvents: true
+    logStructuredErrors: false
+    incrementMetrics: true
+  observability:
+    metricsEnabled: true
+    structuredLoggingEnabled: false
+    correlationIdEnabled: true
+    openTelemetryEnabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+
+spring:
+  application:
+    name: ibm-mq-starter-test
+  config:
+    activate:
+      on-profile: test
